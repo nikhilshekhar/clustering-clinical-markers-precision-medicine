@@ -3,7 +3,7 @@ require("RPostgreSQL")
  
 # save the password that we can "hide" it as best as we can by collapsing it
 my_password <- {
-  "1234"
+  "12"
 }
 # provide the database name :
 database_name <- "kedneydata"
