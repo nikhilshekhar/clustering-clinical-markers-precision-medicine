@@ -1,96 +1,83 @@
-import numpy as np
-from numpy import concatenate, array
-from numpy.random import randn
-# Decimal precision value to display in the matrix
-np.set_printoptions(precision=5, suppress=True)
 
-# Scipy
-import scipy
-import scipy.stats as stats
+# get the eGFR data
+# egfr_df <- dbGetQuery(con,"SELECT * FROM cdr_gfr_derived")
+# colnames(egfr_df) <- c("pid","timestamp","gender","birthyear","age","gfr","std_gfr")
+egfr_df <- read.csv("~/PycharmProjects/Seminar702/dataset/cdr_gfr_derived.csv")
+egfr_df[,"gfr"] <- NULL
+colnames(egfr_df) <- c("pid","timestamp","gender","birthyear","age","gfr")
 
-# Matplotlib
-import matplotlib.cm as cm
-import matplotlib.dates as mdates
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
-#%matplotlib inline
-#mpl.rc('figure', figsize=(10, 8))
+# Get the findings data
+# findings_df <- dbGetQuery(con,"SELECT idperson,finddate,valuename,findvalnum FROM cdr_finding")
+# colnames(findings_df) <- c("pid","timestamp","testname","testval")
+findings_df <- read.csv("~/PycharmProjects/Seminar702/dataset/cdr_finding.csv")
+keeps_findings_df <- c("idperson","finddate","valuename","findvalnum")
+findings_df <- findings_df[keeps_findings_df]
+colnames(findings_df) <- c("pid","timestamp","testname","testval")
 
-# Pandas experiments
-import pandas as pd
-from pandas import Series, DataFrame, Panel
 
-# Misc
-import time
-import datetime as dt
-import math
-import random
-# import seaborn as sns
-print 'All libraries loaded.'
-
-# eGFR data
-egfr_df = pd.read_csv('dataset/cdr_gfr_derived.csv', parse_dates=['resultdata'])
-egfr_df.drop('gfr', axis=1, inplace=True)
-egfr_df.columns = ['pid', 'timestamp', 'gender', 'birthyear', 'age', 'gfr']
-
-# Findings data
-findings_df = pd.read_csv('dataset/cdr_finding.csv', parse_dates=['finddate'], usecols=['idperson', 'finddate', 'valuename', 'findvalnum'])
-findings_df = findings_df[['idperson', 'finddate', 'valuename', 'findvalnum']]
-findings_df.columns = ['pid', 'timestamp', 'testname', 'testval']
-
-# Lab reports data
-lab_df = pd.read_csv('dataset/cdr_lab_result.csv', parse_dates=['resultdate'], usecols=['idperson', 'resultdate', 'valuename', 'resultvaluenum'])
-lab_df = lab_df[['idperson', 'resultdate', 'valuename', 'resultvaluenum']]
-lab_df.columns = ['pid', 'timestamp', 'testname', 'testval']
+#Get lab reports data
+# lab_df <- dbGetQuery(con,"SELECT idperson,resultdate,valuename,resultvaluenum FROM cdr_lab_result")
+# colnames(lab_df) <- c("pid","timestamp","testname","testval")
+lab_df <- read.csv("~/PycharmProjects/Seminar702/dataset/cdr_lab_result.csv")
+keeps_lab_df <- c("idperson","resultdate","valuename","resultvaluenum")
+lab_df <- lab_df[keeps_lab_df]
+colnames(lab_df) <- c("pid","timestamp","testname","testval")
 # Make all lab tests values uppercase
-lab_df.testname = map(lambda x: x.upper(), lab_df.testname)
 
 
+#Normalize dates
+egfr_df$timestamp = as.Date(egfr_df$timestamp,format="%Y-%m-%d")
+findings_df$timestamp = as.Date(findings_df$timestamp,format ="%Y-%m-%d")
+lab_df$timestamp = as.Date(lab_df$timestamp,format="%Y-%m-%d")
 
 
-# Normalize dates (to remove the time part of it)
-egfr_df.timestamp = egfr_df.timestamp.map(pd.datetools.normalize_date)
-findings_df.timestamp = findings_df.timestamp.map(pd.datetools.normalize_date)
-lab_df.timestamp = lab_df.timestamp.map(pd.datetools.normalize_date)
+#NaN values
 
 
+#Make index -->Not required in R
 
-# NaN values
-total_rowcount = len(lab_df.testval.values)
-nan_rowcount = len([x for x in lab_df.testval.values if math.isnan(x)])
-print '\n',(str(nan_rowcount*100/total_rowcount)+ "% of the values are NaN")
+#List of patients who have eGFR reading
+list_of_patients = unique(egfr_df$pid)   #63215
 
-# Set the index as a combination of the person ID and timestamp
-egfr_df.set_index(['pid', 'timestamp'], inplace=True)
-findings_df.set_index(['pid', 'timestamp'], inplace=True)
-lab_df.set_index(['pid', 'timestamp'], inplace=True)
+#make a new empty dataframe
+unique_findings = levels(findings_df$testname)
+unique_labtests = levels(lab_df$testname)
+final_col_names = append(unique_findings,unique_labtests)
 
+#Make a combined dataframe for all the feature vector
+combined_df = egfr_df
+for (newcol in final_col_names){
+  combined_df[,newcol] <-NA
+}
 
-list_of_patients = list(set(egfr_df.index.get_level_values('pid').values))
-print '\nFound', len(list_of_patients), 'unique patients'
+#Datframe is a list of values
+for ( i in 1:nrow(findings_df)){
+  finding_current_patient = findings_df[i,]
+  colnames(finding_current_patient) <- c("pid","timestamp","testname","testval")
+  #print(finding_current_patient)
+  if (finding_current_patient$pid %in% list_of_patients){
+    #print(finding_current_patient$pid)
+    list_current_patients = subset(combined_df,combined_df$pid == finding_current_patient$pid)
+    #print(list_current_patients)
+    for(j in 1:nrow(list_current_patients)){
+      #print(list_current_patients)                       #b = subset(findings_df,findings_df$pid == 8574069)
+      #print(j)                                            #a = subset(combined_df,combined_df$pid == 8574069)
+      current_pid = list_current_patients$pid
+      current_timestamp = list_current_patients$timestamp
+      list_current_finding = subset(findings_df,findings_df$pid == current_pid & findings_df$timestamp == current_timestamp)
+      if (nrow(list_current_finding)!=0){
+        print(list_current_patients)
+        print(list_current_finding)
+        for(field in names(combined_df)){
+          #combined_df[[field]] = list_current_finding[[field]]
+          print(combined_df[[field]])
+        }
+      }
+      
 
-
-# Column names will be a combination of all the lab test names and finding names
-unique_findings = set(findings_df.testname.values)
-unique_labtests = set(lab_df.testname.values)
-print '\nFindings:', list(unique_findings)
-print 'Lab tests:', list(unique_labtests)
-final_col_names = np.append(list(unique_findings), list(unique_labtests))
-
-# Row locations in the eGFR dataframe of patients
-# locations_of_patients = []
-# for patient in list_of_patients:
-#     get_loc_result = egfr_df.index.get_loc(patient)
-#     locations_of_patients += [i for i,v in enumerate(get_loc_result) if v == True]
-
-# combined_df = DataFrame(egfr_df.iloc[locations_of_patients])
-combined_df = pd.DataFrame(egfr_df)
-
-
-# Add the new columns
-for newcol in final_col_names:
-    combined_df[newcol] = np.nan
-
+    }
+  }
+}
 
 
 
