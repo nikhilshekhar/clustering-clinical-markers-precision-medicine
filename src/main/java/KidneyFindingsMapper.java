@@ -20,13 +20,13 @@ public class KidneyFindingsMapper extends Mapper<LongWritable, Text, Text, Text>
 
         String[] rowElements = value.toString().split(",");
         String outputKey = rowElements[1]+":"+rowElements[2];
-//        if (rowElements[1].compareTo("8545332")==0) {
+        if (rowElements[1].compareTo("9581824")==0) {
             String testNameFormatting = rowElements[3].substring(1, rowElements[3].lastIndexOf("\""));
             String outputValue = testNameFormatting + ":" + rowElements[4];
-//            System.out.println("Key:" + outputKey);
-//            System.out.println("Value:" + outputValue);
+            System.out.println("Key:" + outputKey);
+            System.out.println("Value:" + outputValue);
             context.write(new Text(outputKey), new Text(outputValue));
-//        }
+        }
 
     }
 

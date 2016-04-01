@@ -28,13 +28,13 @@ public class KidneyGfrMapper extends Mapper<LongWritable, Text, Text, Text> {
 //            String newStirng = column.substring(1,column.lastIndexOf("\""));
 //            System.out.println(newStirng);
 //        }
-//        if (rowElements[1].compareTo("8545332")==0){
+        if (rowElements[1].compareTo("9581824")==0){
         String outputValue = "999"+testNameFormatting+","+rowElements[4]+","+rowElements[5]+","+rowElements[6];
-//        System.out.println("Key:"+outputKey);
-//        System.out.println("Value:"+outputValue);
+        System.out.println("Key:"+outputKey);
+        System.out.println("Value:"+outputValue);
 
             context.write(new Text(outputKey),new Text(outputValue));
-//        }
+        }
 
 
 //If there are multiple rows for the same (pateintid,timestamp) currently one gets overidden by the other
