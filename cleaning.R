@@ -405,3 +405,179 @@ print(total_outliers)
 #Write the final feature vector to file
 write.csv(feature_matrix,file = "feature_matrix_after_outlier_removal.csv")
 
+#Finding patients which cluster together
+#Run the MR job to order by date and then run the following on output of MR job
+#hadoop jar Seminar.jar seminar.driver.SortOnTimeStampDriver feature_matrix_after_outlier_removal.csv seminar_out3
+#The next two steps not needed now
+#cut -f3- -d$'\t' part-r-00000 > part-r-00000-first
+#cut -f3- -d$'\t' part-r-00001 > part-r-00001-first
+#Output is in the file feature_matrix_arranged_by_date_with_patients_10_or_more.csv
+#Load this file
+feature_vector_sorted_by_time <- read.csv("~/Seminar702/feature_matrix_arranged_by_date_with_patients_10_or_more.csv")
+
+#CAN BE USED INSTEAD OF MR
+#To get the patients having more than 9 readings --Currently done with MR but this code works as well
+#list_of_patients_now = unique(feature_vector_sorted_by_time$pid)
+# feature_vector_sorted_by_time_having_10_or_more_readings = data.frame()
+# for ( i in 1:length(list_of_patients_now)){
+#   #Get rows of a patient
+#   rows_of_one_patient = subset(feature_matrix,feature_matrix$pid==list_of_patients_now[i])
+#   rows_of_one_patient_count = length(rows_of_one_patient$pid)
+#   print(rows_of_one_patient_count)
+#   if(rows_of_one_patient_count > 9){
+#     feature_vector_sorted_by_time_having_10_or_more_readings = rbind(feature_vector_sorted_by_time_having_10_or_more_readings,rows_of_one_patient)
+#   }
+#   print(i)
+# }
+
+library(lattice)
+library(latticeExtra)
+#list_of_unique_patients = unique(feature_vector_sorted_by_time$pid)
+#a = subset(feature_vector_sorted_by_time,feature_vector_sorted_by_time$pid==8545358)#8608816
+#a = a[order(as.Date(a$timestamp, format="%Y-%m-%d")),]
+#b = unfactor(a$timestamp)
+#c = a$gfr
+#dotplot(c~b,type="b",col = c("red"))
+#
+#aa = subset(feature_vector_sorted_by_time,feature_vector_sorted_by_time$pid==8545368)#8608816
+#ba = unfactor(aa$timestamp)
+#ca = aa$gfr
+#dotplot(ca~ba,type="b",axes=F,col = c("blue"))
+#par(new=F)
+
+list_of_unique_patients = unique(feature_vector_sorted_by_time$pid)
+for ( i in 1:20){
+  ten_pid = list_of_unique_patients[i]
+  print(ten_pid)
+}
+
+#Plot 10 points in groups to see correlation 
+i = 21
+
+
+a1 = subset(feature_vector_sorted_by_time,feature_vector_sorted_by_time$pid==list_of_unique_patients[i])
+a2 = subset(feature_vector_sorted_by_time,feature_vector_sorted_by_time$pid==list_of_unique_patients[i+1])
+a3 = subset(feature_vector_sorted_by_time,feature_vector_sorted_by_time$pid==list_of_unique_patients[i+2])
+a4 = subset(feature_vector_sorted_by_time,feature_vector_sorted_by_time$pid==list_of_unique_patients[i+3])
+a5 = subset(feature_vector_sorted_by_time,feature_vector_sorted_by_time$pid==list_of_unique_patients[i+4])
+a6 = subset(feature_vector_sorted_by_time,feature_vector_sorted_by_time$pid==list_of_unique_patients[i+5])
+a7 = subset(feature_vector_sorted_by_time,feature_vector_sorted_by_time$pid==list_of_unique_patients[i+6])
+a8 = subset(feature_vector_sorted_by_time,feature_vector_sorted_by_time$pid==list_of_unique_patients[i+7])
+a9 = subset(feature_vector_sorted_by_time,feature_vector_sorted_by_time$pid==list_of_unique_patients[i+8])
+a10 = subset(feature_vector_sorted_by_time,feature_vector_sorted_by_time$pid==list_of_unique_patients[i+9])
+
+df1 <- data.frame(a1$timestamp,a1$gfr)
+df2 <- data.frame(a2$timestamp,a2$gfr)
+df3 <- data.frame(a3$timestamp,a3$gfr)
+df4 <- data.frame(a4$timestamp,a4$gfr)
+df5 <- data.frame(a5$timestamp,a5$gfr)
+df6 <- data.frame(a6$timestamp,a6$gfr)
+df7 <- data.frame(a7$timestamp,a7$gfr)
+df8 <- data.frame(a8$timestamp,a8$gfr)
+df9 <- data.frame(a9$timestamp,a9$gfr)
+df10 <- data.frame(a10$timestamp,a10$gfr)
+z = c(90,90,90,90,90,90)
+df_normal <- data.frame(head(a10$timestamp),z)
+
+ggplot() + 
+  geom_line(data = df1, aes(x = a1.timestamp, y = a1.gfr, color = "1", group = 1)) +
+  geom_line(data = df2, aes(x = a2.timestamp, y = a2.gfr, color = "2",  group = 1))  +
+  geom_line(data = df3, aes(x = a3.timestamp, y = a3.gfr, color = "3", group = 1)) +
+  geom_line(data = df4, aes(x = a4.timestamp, y = a4.gfr, color = "4",  group = 1))  +
+  geom_line(data = df5, aes(x = a5.timestamp, y = a5.gfr, color = "5", group = 1)) +
+  geom_line(data = df6, aes(x = a6.timestamp, y = a6.gfr, color = "6",  group = 1))  +
+  geom_line(data = df7, aes(x = a7.timestamp, y = a7.gfr, color = "7", group = 1)) +
+  geom_line(data = df8, aes(x = a8.timestamp, y = a8.gfr, color = "8",  group = 1))  +
+  geom_line(data = df9, aes(x = a9.timestamp, y = a9.gfr, color = "9", group = 1)) +
+  geom_line(data = df10, aes(x = a10.timestamp, y = a10.gfr, color = "10",  group = 1))  +
+ # geom_line(data = df_normal, aes(x =  head.a10.timestamp., y = z,  group = 1),size =2,colour="black")
+  xlab('time') +
+  ylab('efgr')
+
+j = floor(i/10)
+print(i)
+paste(j,":",list_of_unique_patients[i])
+paste(j+1,":",list_of_unique_patients[i+1])
+paste(j+2,":",list_of_unique_patients[i+2])
+paste(j+3,":",list_of_unique_patients[i+3])
+paste(j+4,":",list_of_unique_patients[i+4])
+paste(j+5,":",list_of_unique_patients[i+5])
+paste(j+6,":",list_of_unique_patients[i+6])
+paste(j+7,":",list_of_unique_patients[i+7])
+paste(j+8,":",list_of_unique_patients[i+8])
+paste(j+9,":",list_of_unique_patients[i+9])
+# print(list_of_unique_patients[i+1])
+# print(list_of_unique_patients[i+2])
+# print(list_of_unique_patients[i+3])
+# print(list_of_unique_patients[i+4])
+# print(list_of_unique_patients[i+5])
+# print(list_of_unique_patients[i+6])
+# print(list_of_unique_patients[i+7])
+# print(list_of_unique_patients[i+8])
+# print(list_of_unique_patients[i+9]) 
+
+
+
+#CAN BE USED INSTEAD OF MR
+#Order the rows of patients by timestamps --this works but takes lot of time -- Currently done in MR
+# list_of_patients_now = unique(egfr_df$pid)
+# #list_of_patients_now = head(list_of_patients_now)
+# ordered_feature_vector = data.frame()
+# for ( i in 1:length(list_of_patients_now)){
+#   #Get rows of a patient
+#   rows_of_one_patient = subset(feature_matrix,feature_matrix$pid==list_of_patients_now[i])
+#   #Order the rows
+#   ordered_rows_of_one_patient = rows_of_one_patient[order(as.Date(rows_of_one_patient$timestamp, format="%Y-%m-%d")),]
+#   #Keep appending to get the new ordered feature vector
+#   ordered_feature_vector = rbind(ordered_feature_vector,ordered_rows_of_one_patient)
+#   print(length(list_of_patients_now))
+#   print(i)
+# }
+
+
+
+# #date #egfr_of_patient1 #egfr_of_patient2 #egfr_of_patient3 .........#egfr_of_patient_n 
+# list_of_patients_now = unique(feature_vector_sorted_by_time$pid)
+# 
+# #Get all unique dates of test
+# list_of_unique_timestamps = unique(feature_vector_sorted_by_time$timestamp)
+# 
+# #Count the maximum number of readings of a patient
+# # max_number_of_reading_of_a_patient =  0
+# # for ( i in 1:length(list_of_patients_now)){
+# #   number_of_rows_of_one_patient = count(subset(feature_matrix,feature_matrix$pid==list_of_patients_now[i]))
+# #   if (max_number_of_reading_of_a_patient < number_of_rows_of_one_patient)
+# #     max_number_of_reading_of_a_patient = number_of_rows_of_one_patient
+# #   }
+# 
+# #Create a new data frame for plotting
+# filtered_feature_vector = data.frame(ordered_feature_vector$pid,ordered_feature_vector$timestamp,ordered_feature_vector$gfr)
+# #Create an empty data frame of accurate size ie rows=unique dates, cols = number of patients ==> (list_of_unique_timestamps,63125)
+# mat<-matrix(nrow=length(list_of_unique_timestamps+1), ncol=length(list_of_patients_now+1))
+# 
+# #Adding the first column as the timestamps
+# t = as.data.frame(list_of_unique_timestamps)
+# mat[,1] = t
+# 
+# #for ( i in 1:length(list_of_patients_now)){
+# for ( i in 1:length(10)){
+#   #Get rows of a patient
+#   rows_of_one_patient = subset(feature_matrix,feature_matrix$pid==list_of_patients_now[i])
+#   #Read timestamp
+#   timestamp_1 = rows_of_one_patient$timestamp
+#   gfr_1 = rows_of_one_patient$gfr
+#   pid_1 = rows_of_one_patient$pid
+#   #First row is the patient-id
+#   mat[1,i] = pid_1
+#   for( j in 1:length(list_of_unique_timestamps)){
+#     if (timestamp_1 == mat[j,1]){
+#       mat[j,i] = gfr_1
+#     }
+#   }
+#  
+#   
+# }
+
+
+
+
