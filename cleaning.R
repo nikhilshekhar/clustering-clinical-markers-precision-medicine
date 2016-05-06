@@ -214,7 +214,7 @@ for( i in 1:length(na_count_per_column)){
     print(names(na_count_per_column[i]))
     feature_matrix[names(na_count_per_column[i])] <-NULL
   }
- 
+  
 }
 
 #Dimension of the matrix
@@ -452,7 +452,7 @@ for ( i in 1:20){
 }
 
 #Plot 10 points in groups to see correlation 
-i = 21
+i = 151
 
 
 a1 = subset(feature_vector_sorted_by_time,feature_vector_sorted_by_time$pid==list_of_unique_patients[i])
@@ -494,8 +494,9 @@ ggplot() +
   xlab('time') +
   ylab('efgr')
 
-j = floor(i/10)
+j = floor(i %% 10)
 print(i)
+print(j)
 paste(j,":",list_of_unique_patients[i])
 paste(j+1,":",list_of_unique_patients[i+1])
 paste(j+2,":",list_of_unique_patients[i+2])
@@ -506,15 +507,30 @@ paste(j+6,":",list_of_unique_patients[i+6])
 paste(j+7,":",list_of_unique_patients[i+7])
 paste(j+8,":",list_of_unique_patients[i+8])
 paste(j+9,":",list_of_unique_patients[i+9])
-# print(list_of_unique_patients[i+1])
-# print(list_of_unique_patients[i+2])
-# print(list_of_unique_patients[i+3])
-# print(list_of_unique_patients[i+4])
-# print(list_of_unique_patients[i+5])
-# print(list_of_unique_patients[i+6])
-# print(list_of_unique_patients[i+7])
-# print(list_of_unique_patients[i+8])
-# print(list_of_unique_patients[i+9]) 
+
+#Patients of interest: 8545588,8545604,8545650,8545741,8545714,8545747;8545850,8545854;8546521;8546548,
+#8546553;8546727;8546770;8546900
+a1 = subset(feature_vector_sorted_by_time,feature_vector_sorted_by_time$pid==8545747)
+df1 <- data.frame(a1$timestamp,a1$gfr)
+ggplot() + 
+  geom_line(data = df1, aes(x = a1.timestamp, y = a1.gfr, color = "1", group = 1)) +
+  xlab('time') +
+  ylab('efgr')
+
+
+a1 = subset(feature_vector_sorted_by_time,feature_vector_sorted_by_time$pid==8545747)
+df1 <- data.frame(a1$timestamp,a1$LR_GLUCNONFAST)
+ggplot() + 
+  geom_line(data = df1, aes(x = a1.timestamp, y = a1.LR_GLUCNONFAST, color = "1", group = 1)) +
+  xlab('time') +
+  ylab('efgr')
+
+
+
+
+
+
+
 
 
 
@@ -577,7 +593,5 @@ paste(j+9,":",list_of_unique_patients[i+9])
 #  
 #   
 # }
-
-
 
 
